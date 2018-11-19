@@ -1,5 +1,4 @@
 # cubes
-cubes game for amazing people
 Kill the cubes!
 
 Author: Guryeva Ann
