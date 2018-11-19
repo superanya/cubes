@@ -11,9 +11,11 @@ You will be winner if you kill all cubes.
 
 # Decomposition
 
-Tests: test_field.py, test_game.py \n
-Game module: game.py /n
-Main: menu.py /n
+Tests: test_field.py, test_game.py
+
+Game module: game.py
+
+Main: menu.py
 
 # Execute
 
