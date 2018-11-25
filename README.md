@@ -1,4 +1,4 @@
-# cubes
+# Cubes
 Kill the cubes!
 
 Author: Guryeva Ann
