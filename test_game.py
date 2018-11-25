@@ -10,7 +10,7 @@ game = Game("Cubes", "images/back.jpg", 60, COLORS, 'big')
 class TestGame(unittest.TestCase):
     def test_game_parameters(self):
         self.assertEqual(COLORS, game.colors)
-        self.assertEqual(200, game.width)
+        self.assertEqual(28, game.width)
         self.assertEqual(10, game.height)
         self.assertTrue(7, len(game.information_about_colors))
 

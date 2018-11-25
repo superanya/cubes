@@ -1,5 +1,5 @@
 import unittest
-from field import Field
+from field_attributes.field import Field
 from menu import Color
 
 

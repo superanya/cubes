@@ -1,6 +1,6 @@
 import random
 import pygame
-from block import Block
+from field_attributes.block import Block
 
 
 class Field:
@@ -77,7 +77,7 @@ class Field:
         blocks_remove = [block]
         blocks_remove = self.get_blocks_remove(block_neighbours,
                                                block, blocks_remove)
-        if len(blocks_remove) > 2:
+        if len(blocks_remove) > 1:
             for i in blocks_remove:
                 block = self.blocks2coordinates[(i.coordinates[0],
                                                  i.coordinates[1])][0]
@@ -112,6 +112,20 @@ class Field:
         self.height = width
         self.blocks = pygame.sprite.Group()
         self.blocks2coordinates = self.set_blocks2coordinates()
+        return self.is_exit()
+
+    def is_exit(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                if (i, j) in self.blocks2coordinates:
+                    block = self.blocks2coordinates[(i, j)][0]
+                    block_neighbours = self.blocks2coordinates[(i, j)][1]
+                    blocks_remove = [block]
+                    blocks_remove = self.get_blocks_remove(block_neighbours,
+                                                           block, blocks_remove)
+                if len(blocks_remove) > 1:
+                    return False
+        return True
 
     @staticmethod
     def create_new_field(field):
