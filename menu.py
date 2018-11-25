@@ -27,7 +27,7 @@ class Menu:
         self.size = "small"
         self.paragraphs_settings = [[300, 150, 'Small',
                                 (250, 20, 147),
-                                (139, 0, 139), 0],
+                                    (165, 42, 42), 0],
                                [300, 190, 'Middle 1',
                                 (250, 20, 147),
                                 (139, 0, 139), 1],
@@ -47,7 +47,7 @@ class Menu:
                 surface.blit(font.render(i[2], 1, i[4]), (i[0], i[1]))
 
     def start(self):
-        font_menu = pygame.font.Font('ARCADE.ttf', 25)
+        font_menu = pygame.font.Font('fonts/ARCADE.ttf', 25)
         paragraph = 0
         self.surface.blit(self.background_image, (0, 0))
         while True:
@@ -80,7 +80,7 @@ class Menu:
                         self.settings.start()
                         self.size = self.settings.size
 
-                        if previous_paragraph is not None and previous_paragraph != self.settings.chosen_paragraph:
+                        if previous_paragraph != self.settings.chosen_paragraph:
                             self.paragraphs_settings[previous_paragraph][4] = (139, 0, 139)
                         self.paragraphs_settings[self.settings.chosen_paragraph][4] = \
                             (165, 42, 42)
@@ -99,11 +99,11 @@ class Settings:
     def __init__(self, back_image_filename, paragraphs):
         self.paragraphs = paragraphs
         self.background_image = \
-            pygame.image.load(back_image_filename)
+            pygame.image.load(back_image_filename).convert()
         self.surface = pygame.display.set_mode((700, 393))
         self.size = None
         self.stop = False
-        self.chosen_paragraph = None
+        self.chosen_paragraph = 0
 
     def render(self, surface, font, num_paragraph):
         for i in self.paragraphs:
@@ -113,7 +113,7 @@ class Settings:
                 surface.blit(font.render(i[2], 1, i[4]), (i[0], i[1]))
 
     def start(self):
-        font_menu = pygame.font.Font('ARCADE.ttf', 25)
+        font_menu = pygame.font.Font('fonts/ARCADE.ttf', 25)
         paragraph = 0
         self.surface.blit(self.background_image, (0, 0))
         while True:
