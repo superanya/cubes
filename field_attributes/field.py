@@ -5,12 +5,12 @@ from field_attributes.block import Block
 
 class Field:
     def __init__(self, colors, width=-1, height=-1, field=None):
+        self.colors = colors
+        self.blocks = pygame.sprite.Group()
+        self.color2count = {}
         self.width = width
         self.height = height
-        self.colors = colors
-        self.color2count = {}
         self.field = self.generate_random_field() if not field else field
-        self.blocks = pygame.sprite.Group()
         self.blocks2coordinates = self.set_blocks2coordinates()
 
     def set_blocks2coordinates(self):
@@ -101,15 +101,15 @@ class Field:
         return color.value
 
     def update(self):
-        width = 0
+        height = 0
         for i in self.field:
-            if len(i) > width:
-                width = len(i)
+            if len(i) > height:
+                height = len(i)
         for i in self.field:
-            while len(i) < width:
-                i.append(None)
+            while len(i) < height:
+                i.insert(0, None)
         self.width = len(self.field)
-        self.height = width
+        self.height = height
         self.blocks = pygame.sprite.Group()
         self.blocks2coordinates = self.set_blocks2coordinates()
         return self.is_exit()
@@ -123,8 +123,8 @@ class Field:
                     blocks_remove = [block]
                     blocks_remove = self.get_blocks_remove(block_neighbours,
                                                            block, blocks_remove)
-                if len(blocks_remove) > 1:
-                    return False
+                    if len(blocks_remove) > 1:
+                        return False
         return True
 
     @staticmethod

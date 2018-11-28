@@ -12,9 +12,11 @@ class Game:
                  back_image_filename,
                  frame_rate,
                  colors,
+                 table_of_records_filename,
                  size='small'):
         self.background_image = \
             pygame.image.load(back_image_filename).convert()
+        self.table_of_records_file = table_of_records_filename
         self.frame_rate = frame_rate
         self.game_over = False
         self.set_field_parameters(size, colors)
@@ -37,22 +39,23 @@ class Game:
         self.table_of_records = self.set_table_of_records()
         self.current_user = pygame_textinput.TextInput()
 
-    @staticmethod
-    def set_table_of_records():
+    def set_table_of_records(self):
         table_of_records = {}
-        with open("texts/table_of_records.txt") as table:
+        with open(self.table_of_records_file) as table:
             for text in table.readlines():
                 if text.find(":") > 0:
                     user, records = text.split(":")
-                    table_of_records[user] = [int(i) for i in records.split(',')]
+                    table_of_records[user] = [int(i) for i in
+                                              records.split(',')]
                 else:
                     break
         return table_of_records
 
     def write_table(self):
-        with open("texts/table_of_records.txt", 'w') as table_text:
-            table_text.write('\n'.join('{}: {}'.format(user, ', '.join(map(str,
-                                                                           set(self.table_of_records[user][0:10]))))
+        with open(self.table_of_records_file, 'w') as table_text:
+            table_text.write('\n'.join('{}: {}'.format(user,
+                                                       ', '.join(map(str,
+                                                                     set(self.table_of_records[user][0:10]))))
                                        for user in self.table_of_records))
 
     def update_table(self):
@@ -64,7 +67,8 @@ class Game:
         self.table_of_records[current_user].sort(reverse=True)
         self.write_table()
 
-    def set_information_about_colors(self, back_image_filename, color_remove=None, count=0):
+    def set_information_about_colors(self, back_image_filename,
+                                     color_remove=None, count=0):
         iteration = 0
         information_about_colors = []
         for color in self.colors:
@@ -88,28 +92,30 @@ class Game:
         self.total_score += score
         self.score = Score(self.background_image, 393, self.total_score)
 
-    def update_color_information(self, back_image_filename, color_remove, count):
+    def update_color_information(self,
+                                 back_image_filename,
+                                 color_remove, count):
         self.height_information = 365
         self.width_information = 0
-        self.information_about_colors = self.set_information_about_colors(back_image_filename,
-                                                                          color_remove, count)
+        self.information_about_colors = self.set_information_about_colors(
+            back_image_filename, color_remove, count)
 
     @staticmethod
     def set_field_parameters(size, colors):
         if size == "small":
-            width = 28
+            width = 27
             height = 4
             colors = colors[0:4]
         if size == "middle 1":
-            width = 28
+            width = 27
             height = 6
             colors = colors[0:5]
         if size == "middle 2":
-            width = 28
+            width = 27
             height = 8
             colors = colors[1:6]
         if size == "big":
-            width = 28
+            width = 27
             height = 10
             colors = colors
         return width, height, colors
@@ -141,12 +147,14 @@ class Game:
                         score, color = self.object.remove((block.rect.x / 26,
                                                            block.rect.y / 26))
                         self.update_score(score)
-                        self.update_color_information(self.background_image, color, score)
+                        self.update_color_information(
+                            self.background_image, color, score)
 
     def exit(self):
         exit_window_surface = pygame.display.set_mode((700, 393))
         font = pygame.font.Font("fonts/ARCADE.ttf", 40)
-        exit_message = font.render('Game over. Please, enter your name: ', True, (0, 0, 0))
+        exit_message = font.render('Game over. Please, enter your name: ',
+                                   True, (0, 0, 0))
         while True:
             exit_window_surface.fill((225, 225, 225))
             exit_window_surface.blit(exit_message, (0, 10))

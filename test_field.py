@@ -1,7 +1,7 @@
 import unittest
-from field_attributes.field import Field
+import sys
 from menu import Color
-
+from field_attributes.field import Field
 
 COLORS = [color for color in Color]
 COLORS_VALUES = [color.value for color in Color]
@@ -54,7 +54,7 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((0, 0))
-        new_field = '(0, 0, 205) \n' \
+        new_field = ' (0, 0, 205)\n' \
                     '(255, 140, 0) (0, 0, 205)\n' \
                     '(0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())
@@ -69,7 +69,7 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((0, 1))
-        new_field = '(0, 0, 205) \n' \
+        new_field = ' (0, 0, 205)\n' \
                     '(255, 140, 0) (0, 0, 205)\n' \
                     '(0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())
@@ -84,7 +84,7 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((2, 0))
-        new_field = '(0, 0, 205) \n' \
+        new_field = ' (0, 0, 205)\n' \
                     '(255, 140, 0) (0, 0, 205)\n' \
                     '(0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())

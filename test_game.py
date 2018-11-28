@@ -4,13 +4,13 @@ from menu import Color
 
 COLORS = [color for color in Color]
 
-game = Game("Cubes", "images/back.jpg", 60, COLORS, 'big')
+game = Game("Cubes", "images/back.jpg", 60, COLORS, "texts/test_table.TXT", 'big')
 
 
 class TestGame(unittest.TestCase):
     def test_game_parameters(self):
         self.assertEqual(COLORS, game.colors)
-        self.assertEqual(28, game.width)
+        self.assertEqual(27, game.width)
         self.assertEqual(10, game.height)
         self.assertTrue(7, len(game.information_about_colors))
 
@@ -20,4 +20,4 @@ class TestGame(unittest.TestCase):
 
 
 if __name__ == '__main__':
-            unittest.main()
+    unittest.main()

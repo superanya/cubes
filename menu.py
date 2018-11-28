@@ -26,18 +26,19 @@ class Menu:
         self.surface = pygame.display.set_mode((700, 393))
         self.size = "small"
         self.paragraphs_settings = [[300, 150, 'Small',
-                                (250, 20, 147),
+                                     (250, 20, 147),
                                     (165, 42, 42), 0],
-                               [300, 190, 'Middle 1',
-                                (250, 20, 147),
-                                (139, 0, 139), 1],
-                               [300, 230, 'Middle 2',
-                                (250, 20, 147),
-                                (139, 0, 139), 2],
-                               [300, 270, 'Big',
-                                (250, 20, 147),
-                                (139, 0, 139), 3]]
-        self.settings = Settings("images/arseniy-chebynkin-106.jpg", self.paragraphs_settings)
+                                    [300, 190, 'Middle 1',
+                                     (250, 20, 147),
+                                     (139, 0, 139), 1],
+                                    [300, 230, 'Middle 2',
+                                     (250, 20, 147),
+                                     (139, 0, 139), 2],
+                                    [300, 270, 'Big',
+                                     (250, 20, 147),
+                                     (139, 0, 139), 3]]
+        self.settings = Settings("images/arseniy-chebynkin-106.jpg",
+                                 self.paragraphs_settings)
 
     def render(self, surface, font, num_paragraph):
         for i in self.paragraphs:
@@ -72,7 +73,8 @@ class Menu:
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if paragraph == 0:
                         game = Game("Cubes", "images/back.jpg",
-                                    60, COLORS, self.size)
+                                    60, COLORS,
+                                    "texts/table_of_records.TXT", self.size)
                         game.run()
                         main()
                     if paragraph == 1:
@@ -80,14 +82,19 @@ class Menu:
                         self.settings.start()
                         self.size = self.settings.size
 
-                        if previous_paragraph != self.settings.chosen_paragraph:
-                            self.paragraphs_settings[previous_paragraph][4] = (139, 0, 139)
-                        self.paragraphs_settings[self.settings.chosen_paragraph][4] = \
+                        if previous_paragraph != \
+                                self.settings.chosen_paragraph:
+                            self.paragraphs_settings[previous_paragraph][4] = \
+                                (139, 0, 139)
+                        self.paragraphs_settings[
+                            self.settings.chosen_paragraph][4] = \
                             (165, 42, 42)
 
                         self.settings.size = None
                         game = Game("Cubes", "images/back.jpg",
-                                    60, COLORS, self.size)
+                                    60, COLORS,
+                                    "texts/table_of_records.TXT",
+                                    self.size)
                         game.run()
                         main()
                     if paragraph == 2:
