@@ -4,22 +4,19 @@ Kill the cubes!
 
 Author: Guryeva Ann
 
-Description
+# Description
 
 In this funny game you can kill cube if he has two and more neighbours the same color. 
 You will be winner if you kill all cubes.
 
-Decomposition
+# Decomposition
 
-Tests: test_field.py, test_game.py
+Tests: test_field.py
 Game module: game.py
-Main: menu.py
+Main (run): menu.py
 
-Execute
+# Execute
 
-You can run this game with menu.py. In menu you can see three paragraphs: game, settings and leave. If you push game
-you start game with default settings: on 'small' field with four colours, width 50 and height 4. In settings you can choose
-other parameters: 'middle 1' means five colours, width 100 and height 6, 'middle 2' means five colours, width 150 and 
-height 8, 'big' means seven colours, width 200 and height 10. If you want to leave push the 'leave'. 
-You can see your best score and current score in real time in game. Table of records you can find in file. 
-You can start the new game in any time of game, just push the putton 'start new game' in the bottom of the window. 
+You can run this game with menu.py. In settings you can choose one of four types of field: small (includes 10x10 cubes, 4 colors), 
+middle 1 (includes 14x14 cubes, 5 colors), middle 2 (includes 14x14 cubes, 6 colors) and big (includes 25x25 cubes, 7 colors). You can switch field in any time. 
+See table of records in menu File\Table of records or in project in texts\table_of_records.txt

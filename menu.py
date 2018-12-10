@@ -1,8 +1,11 @@
-import sys
-import pygame
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction,\
+                            QWidget, QLabel, QActionGroup, QVBoxLayout
+from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtGui import QPainter, QColor, QBrush, QIcon
 from game import Game
+import sys
 from enum import Enum
-pygame.init()
+from field_attributes.field import Field
 
 
 class Color(Enum):
@@ -18,159 +21,116 @@ class Color(Enum):
 COLORS = [color for color in Color]
 
 
-class Menu:
-    def __init__(self, back_image_filename, paragraphs):
-        self.paragraphs = paragraphs
-        self.background_image = \
-            pygame.image.load(back_image_filename)
-        self.surface = pygame.display.set_mode((700, 393))
-        self.size = "small"
-        self.paragraphs_settings = [[300, 150, 'Small',
-                                     (250, 20, 147),
-                                    (165, 42, 42), 0],
-                                    [300, 190, 'Middle 1',
-                                     (250, 20, 147),
-                                     (139, 0, 139), 1],
-                                    [300, 230, 'Middle 2',
-                                     (250, 20, 147),
-                                     (139, 0, 139), 2],
-                                    [300, 270, 'Big',
-                                     (250, 20, 147),
-                                     (139, 0, 139), 3]]
-        self.settings = Settings("images/arseniy-chebynkin-106.jpg",
-                                 self.paragraphs_settings)
+class Menu(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.init_game()
+        self.setMouseTracking(True)
+        self.setGeometry(0, 0, 800, 600)
+        self.setWindowTitle('Cubes')
+        self.setWindowIcon(QIcon('icons/cube.png'))
+        self.menu = self.menuBar()
+        self.statusBar()
+        self.file = self.menu.addMenu('&File')
+        self.settings = self.menu.addMenu('&Settings')
+        self.exit = QAction('Exit', self)
+        self.table_of_records = QAction('Table of records', self)
+        self.table_of_records.setStatusTip('Show table of records')
+        self.exit.setShortcut('Ctrl+Q')
+        self.exit.setStatusTip('Exit application')
+        self.file.addAction(self.table_of_records)
+        self.file.addAction(self.exit)
+        self.init_settings()
+        self.exit.triggered.connect(self.close)
+        self.table_of_records.triggered.connect(self.show_table_of_records)
 
-    def render(self, surface, font, num_paragraph):
-        for i in self.paragraphs:
-            if num_paragraph == i[5]:
-                surface.blit(font.render(i[2], 1, i[3]), (i[0], i[1]))
-            else:
-                surface.blit(font.render(i[2], 1, i[4]), (i[0], i[1]))
+    def init_settings(self):
+        self.sizes = QActionGroup(self)
+        self.small = QAction('Small', self, checkable=True)
+        self.small.setChecked(True)
+        self.small.triggered.connect(lambda: self.set_size('small'))
+        self.small.setCheckable(True)
+        self.sizes.addAction(self.small)
+        self.settings.addAction(self.small)
+        self.middle1 = QAction('Middle 1', self, checkable=True)
+        self.middle1.triggered.connect(lambda: self.set_size('middle1'))
+        self.middle1.setCheckable(True)
+        self.sizes.addAction(self.middle1)
+        self.settings.addAction(self.middle1)
+        self.middle2 = QAction('Middle 2', self, checkable=True)
+        self.middle2.triggered.connect(lambda: self.set_size('middle2'))
+        self.middle2.setCheckable(True)
+        self.sizes.addAction(self.middle2)
+        self.settings.addAction(self.middle2)
+        self.big = QAction('Big', self, checkable=True)
+        self.big.triggered.connect(lambda: self.set_size('big'))
+        self.big.setCheckable(True)
+        self.sizes.addAction(self.big)
+        self.settings.addAction(self.big)
 
-    def start(self):
-        font_menu = pygame.font.Font('fonts/ARCADE.ttf', 25)
-        paragraph = 0
-        self.surface.blit(self.background_image, (0, 0))
-        while True:
-            mouse_pos = pygame.mouse.get_pos()
-            for i in self.paragraphs:
-                if i[0] < mouse_pos[0] < i[0] + 155 and \
-                        i[1] < mouse_pos[1] < i[1] + 50:
-                    paragraph = i[5]
-            self.render(self.surface, font_menu, paragraph)
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    sys.exit()
-                if e.type == pygame.KEYDOWN:
-                    if e.type == pygame.K_ESCAPE:
-                        sys.exit()
-                if e.type == pygame.K_UP:
-                    if paragraph > 0:
-                        paragraph -= 1
-                if e.type == pygame.K_DOWN:
-                    if paragraph < self.paragraphs.length - 1:
-                        paragraph += 1
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if paragraph == 0:
-                        game = Game("Cubes", "images/back.jpg",
-                                    60, COLORS,
-                                    "texts/table_of_records.TXT", self.size)
-                        game.run()
-                        main()
-                    if paragraph == 1:
-                        previous_paragraph = self.settings.chosen_paragraph
-                        self.settings.start()
-                        self.size = self.settings.size
+        self.small.setStatusTip('A small field. Has 10x10 size and 4 colors')
+        self.middle1.setStatusTip('A middle field. '
+                                  'Has 14x14 size and 5 colors')
+        self.middle2.setStatusTip('A middle field. '
+                                  'Has 14x14 size and 6 colors')
+        self.big.setStatusTip('A big field. Has 25x25 size and 7 colors')
 
-                        if previous_paragraph != \
-                                self.settings.chosen_paragraph:
-                            self.paragraphs_settings[previous_paragraph][4] = \
-                                (139, 0, 139)
-                        self.paragraphs_settings[
-                            self.settings.chosen_paragraph][4] = \
-                            (165, 42, 42)
+    def set_size(self, size):
+        if self.game.exit():
+            self.init_game(size)
 
-                        self.settings.size = None
-                        game = Game("Cubes", "images/back.jpg",
-                                    60, COLORS,
-                                    "texts/table_of_records.TXT",
-                                    self.size)
-                        game.run()
-                        main()
-                    if paragraph == 2:
-                        sys.exit()
-            pygame.display.flip()
+    def closeEvent(self, event):
+        if self.game.exit():
+            sys.exit()
+        else:
+            event.ignore()
 
+    def init_game(self, size='small'):
+        self.width, self.height, self.colors = self.init_field_size(size)
+        self.game = Game(self.colors, self.width, self.height)
+        self.setCentralWidget(self.game)
 
-class Settings:
-    def __init__(self, back_image_filename, paragraphs):
-        self.paragraphs = paragraphs
-        self.background_image = \
-            pygame.image.load(back_image_filename).convert()
-        self.surface = pygame.display.set_mode((700, 393))
-        self.size = None
-        self.stop = False
-        self.chosen_paragraph = 0
+    def init_field_size(self, size):
+        if size == 'small':
+            width = 10
+            height = 10
+            colors = COLORS[0:4]
+        if size == 'middle1':
+            width = 14
+            height = 14
+            colors = COLORS[0:5]
+        if size == 'middle2':
+            width = 14
+            height = 14
+            colors = COLORS[0:6]
+        if size == 'big':
+            width = 25
+            height = 25
+            colors = COLORS
+        return width, height, colors
 
-    def render(self, surface, font, num_paragraph):
-        for i in self.paragraphs:
-            if num_paragraph == i[5]:
-                surface.blit(font.render(i[2], 1, i[3]), (i[0], i[1]))
-            else:
-                surface.blit(font.render(i[2], 1, i[4]), (i[0], i[1]))
+    def paintEvent(self, e):
+        self.game.paintEvent(e)
 
-    def start(self):
-        font_menu = pygame.font.Font('fonts/ARCADE.ttf', 25)
-        paragraph = 0
-        self.surface.blit(self.background_image, (0, 0))
-        while True:
-            mouse_pos = pygame.mouse.get_pos()
-            for i in self.paragraphs:
-                if i[0] < mouse_pos[0] < i[0] + 155 and \
-                        i[1] < mouse_pos[1] < i[1] + 50:
-                    paragraph = i[5]
-            self.render(self.surface, font_menu, paragraph)
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    sys.exit()
-                if e.type == pygame.KEYDOWN:
-                    if e.type == pygame.K_ESCAPE:
-                        sys.exit()
-                if e.type == pygame.K_UP:
-                    if paragraph > 0:
-                        paragraph -= 1
-                if e.type == pygame.K_DOWN:
-                    if paragraph < self.paragraphs.length - 1:
-                        paragraph += 1
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if paragraph == 0:
-                        self.size = "small"
-                    if paragraph == 1:
-                        self.size = "middle 1"
-                    if paragraph == 2:
-                        self.size = "middle 2"
-                    if paragraph == 3:
-                        self.size = "big"
-                    self.chosen_paragraph = paragraph
-            if self.size is not None:
-                break
-            pygame.display.flip()
-
-
-menu = Menu("images/arseniy-chebynkin-106.jpg", [[300, 150, 'Game',
-                                                  (250, 20, 147),
-                                                  (139, 0, 139), 0],
-                                                 [300, 185, 'Settings',
-                                                  (250, 20, 147),
-                                                  (139, 0, 139), 1],
-                                                 [300, 215, 'Leave',
-                                                  (250, 20, 147),
-                                                  (139, 0, 139), 2]])
-
-
-def main():
-    menu.start()
+    def show_table_of_records(self):
+        w = QWidget(self, Qt.Window)
+        w.setWindowModality(Qt.WindowModal)
+        w.resize(300, 200)
+        w.setWindowTitle('Table of records')
+        w.setWindowIcon(QIcon('icons/trophy.png'))
+        w.move(self.geometry().center() - w.rect().center() - QPoint(0, 30))
+        vbox = QVBoxLayout()
+        with open('texts/table_of_records.txt') as f:
+            for line in f.readlines():
+                user_stats = QLabel(line)
+                vbox.addWidget(user_stats)
+        vbox.addStretch(1)
+        w.setLayout(vbox)
+        w.show()
 
 
 if __name__ == '__main__':
-    main()
+    app = QApplication(sys.argv)
+    myapp = Menu()
+    myapp.show()
+    sys.exit(app.exec_())

@@ -1,12 +1,11 @@
-import pygame
+from PyQt5.QtWidgets import QLabel
+from PyQt5 import QtGui
 
 
 class Score:
-    def __init__(self, background_image, rect_bottom, score):
+    def __init__(self, score):
         self.score = score
-        self.font = pygame.font.Font('fonts/ARCADE.ttf', 25)
-        self.render = self.font.render('Score: ' + str(self.score), True,
-                                       (255, 255, 255), background_image)
-        self.rect = self.render.get_rect()
-        self.rect.x = 0
-        self.rect.bottom = rect_bottom
+        self.score = QLabel('Score:  {}'.format(score))
+        self.score.setFont(QtGui.QFont('fonts/Arcade.ttf', 15, QtGui.QFont.Bold))
+        self.score.adjustSize()
+

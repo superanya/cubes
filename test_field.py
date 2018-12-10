@@ -25,6 +25,20 @@ class TestField(unittest.TestCase):
     def test_make_field(self):
         self.assertEqual(field, FIELD.__str__())
 
+    def test_set_block2coordinates(self):
+        self.assertEqual((220, 20, 60),
+                         FIELD.blocks2coordinates[(0, 0)][0].color)
+
+    def test_get_blocks_remove(self):
+        neighbours = FIELD.blocks2coordinates[(0, 0)][1]
+        block = FIELD.blocks2coordinates[(0, 0)][0]
+        blocks_remove = [block]
+        self.assertEqual([FIELD.blocks2coordinates[(0, 0)][0],
+                         FIELD.blocks2coordinates[(0, 1)][0],
+                         FIELD.blocks2coordinates[(0, 2)][0]],
+                         FIELD.get_blocks_remove(neighbours, block,
+                                                 blocks_remove))
+
     def test_set_neighbours(self):
         neighbours = FIELD.blocks2coordinates[(0, 0)][1]
         self.assertEqual([FIELD.blocks2coordinates[(0, 0)][0],
@@ -54,9 +68,9 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((0, 0))
-        new_field = ' (0, 0, 205)\n' \
-                    '(255, 140, 0) (0, 0, 205)\n' \
-                    '(0, 0, 205) (255, 140, 0)\n'
+        new_field = '  (0, 0, 205)\n' \
+                    ' (255, 140, 0) (0, 0, 205)\n' \
+                    ' (0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())
 
     def test_remove_middle(self):
@@ -69,9 +83,9 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((0, 1))
-        new_field = ' (0, 0, 205)\n' \
-                    '(255, 140, 0) (0, 0, 205)\n' \
-                    '(0, 0, 205) (255, 140, 0)\n'
+        new_field = '  (0, 0, 205)\n' \
+                    ' (255, 140, 0) (0, 0, 205)\n' \
+                    ' (0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())
 
     def test_remove_end(self):
@@ -84,9 +98,9 @@ class TestField(unittest.TestCase):
                                             [(220, 20, 60), (0, 0, 205),
                                              (255, 140, 0)]])
         field_remove.remove((2, 0))
-        new_field = ' (0, 0, 205)\n' \
-                    '(255, 140, 0) (0, 0, 205)\n' \
-                    '(0, 0, 205) (255, 140, 0)\n'
+        new_field = '  (0, 0, 205)\n' \
+                    ' (255, 140, 0) (0, 0, 205)\n' \
+                    ' (0, 0, 205) (255, 140, 0)\n'
         self.assertEqual(new_field, field_remove.__str__())
 
     def test_situation_without_remove(self):
@@ -98,6 +112,10 @@ class TestField(unittest.TestCase):
                            (255, 140, 0), (0, 0, 205)],
                           [(220, 20, 60), (0, 0, 205),
                            (255, 140, 0)]], FIELD.field)
+
+    def test_is_exit(self):
+        field = Field(COLORS, 1, 1, [[(220, 20, 60)], [(0, 0, 205)]])
+        self.assertTrue(field.is_exit())
 
 
 if __name__ == '__main__':

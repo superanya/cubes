@@ -1,43 +1,36 @@
-import pygame
-import sys
-from field_attributes.field import Field
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QLineEdit, \
+    QInputDialog
+from PyQt5.QtGui import QPainter, QColor, QBrush, QFont
+from PyQt5.QtCore import Qt, QBasicTimer
 from accessory_files.score import Score
-from accessory_files.information import Information
-from accessory_files import pygame_textinput
+from field_attributes.field import Field
 
 
-class Game:
-    def __init__(self,
-                 caption,
-                 back_image_filename,
-                 frame_rate,
-                 colors,
-                 table_of_records_filename,
-                 size='small'):
-        self.background_image = \
-            pygame.image.load(back_image_filename).convert()
-        self.table_of_records_file = table_of_records_filename
-        self.frame_rate = frame_rate
+class Game(QWidget):
+    def __init__(self, colors, width, height):
+        super().__init__()
+
+        self.colors = colors
+        self.width = width
+        self.height = height
         self.game_over = False
-        self.set_field_parameters(size, colors)
-        self.width, self.height, self.colors = \
-            self.set_field_parameters(size, colors)
         self.object = Field(self.colors, self.width, self.height)
-        pygame.mixer.pre_init(44100, 16, 2, 4096)
-        pygame.init()
-        pygame.font.init()
-        self.surface = pygame.display.set_mode((700, 393))
-        pygame.display.set_caption(caption)
-        self.clock = pygame.time.Clock()
         self.total_score = 0
-        self.score = Score(self.background_image, 393, self.total_score)
-        self.start_new_game = [525, 365, 'Start new game', (255, 255, 255)]
-        self.height_information = 365
-        self.width_information = 0
-        self.information_about_colors = \
-            self.set_information_about_colors(back_image_filename)
+        self.isWaitingAfterLine = False
+        self.table_of_records_file = "texts/table_of_records.txt"
+        self.init_ui()
+        self.information_about_colors = self.set_information_about_colors()
         self.table_of_records = self.set_table_of_records()
-        self.current_user = pygame_textinput.TextInput()
+
+    def set_information_about_colors(self, color_remove=None, count=0):
+        information_about_colors = []
+        for color in self.colors:
+            if color.value is color_remove:
+                self.object.color2count[color.name] -= count
+            text = '{}: {}'.format(color.name,
+                                   self.object.color2count[color.name])
+            information_about_colors.append(text)
+        return information_about_colors
 
     def set_table_of_records(self):
         table_of_records = {}
@@ -67,126 +60,90 @@ class Game:
         self.table_of_records[current_user].sort(reverse=True)
         self.write_table()
 
-    def set_information_about_colors(self, back_image_filename,
-                                     color_remove=None, count=0):
-        iteration = 0
-        information_about_colors = []
-        for color in self.colors:
-            if color.value is color_remove:
-                self.object.color2count[color.name] -= count
-            text = '{}: {}'.format(color.name,
-                                   self.object.color2count[color.name])
-            information_about_colors.append(
-                Information(text,
-                            self.height_information,
-                            self.width_information,
-                            back_image_filename))
-            self.height_information -= 20
-            iteration += 1
-            if iteration == 4:
-                self.width_information = 525
-                self.height_information = 365
-        return information_about_colors
-
     def update_score(self, score):
         self.total_score += score
-        self.score = Score(self.background_image, 393, self.total_score)
 
-    def update_color_information(self,
-                                 back_image_filename,
-                                 color_remove, count):
-        self.height_information = 365
-        self.width_information = 0
-        self.information_about_colors = self.set_information_about_colors(
-            back_image_filename, color_remove, count)
+    def init_ui(self):
+        self.setFixedSize(800, 600)
+        self.button_quit = QPushButton('New game', self)
+        self.button_quit.setFont(QFont('fonts/ARCADE.ttf', 15))
+        x, y = self.width * 22 + 5, self.height * 22 - 40
+        self.button_quit.setFixedWidth(115)
+        self.button_quit.setFixedHeight(40)
+        self.button_quit.adjustSize()
+        self.button_quit.move(x, y)
 
-    @staticmethod
-    def set_field_parameters(size, colors):
-        if size == "small":
-            width = 27
-            height = 4
-            colors = colors[0:4]
-        if size == "middle 1":
-            width = 27
-            height = 6
-            colors = colors[0:5]
-        if size == "middle 2":
-            width = 27
-            height = 8
-            colors = colors[1:6]
-        if size == "big":
-            width = 27
-            height = 10
-            colors = colors
-        return width, height, colors
+        self.button_quit.clicked.connect(self.exit)
 
-    def update(self):
-        return self.object.update()
-
-    def draw(self):
-        self.object.draw(self.surface)
-
-    def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                if self.start_new_game[0] < pos[0] < \
-                        self.start_new_game[0] + 155 and \
-                        self.start_new_game[1] < pos[1] < \
-                        self.start_new_game[1] + 50:
-                    self.exit()
-                    self.update_table()
-                for block in self.object.blocks:
-                    if block.rect.x < pos[0] < \
-                            27 + block.rect.x and \
-                            block.rect.y < pos[1] < \
-                            block.rect.y + 27:
-                        score, color = self.object.remove((block.rect.x / 26,
-                                                           block.rect.y / 26))
-                        self.update_score(score)
-                        self.update_color_information(
-                            self.background_image, color, score)
+        self.repaint()
 
     def exit(self):
-        exit_window_surface = pygame.display.set_mode((700, 393))
-        font = pygame.font.Font("fonts/ARCADE.ttf", 40)
-        exit_message = font.render('Game over. Please, enter your name: ',
-                                   True, (0, 0, 0))
-        while True:
-            exit_window_surface.fill((225, 225, 225))
-            exit_window_surface.blit(exit_message, (0, 10))
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    exit()
-            current_user = self.current_user.update(events)
-            exit_window_surface.blit(self.current_user.get_surface(), (0, 50))
-            pygame.display.update()
-            if current_user:
-                self.game_over = True
-                break
+        le = QLineEdit(self)
+        le.move(130, 22)
+        text, ok = QInputDialog.getText(self, 'Game is over',
+                                        'Enter your name:')
+        if not ok:
+            return False
+        if ok:
+            le.setText(str(text))
+            if self.total_score != 0:
+                self.update_table(text)
+            self.new_game()
+            return True
 
-    def run(self):
-        while not self.game_over:
-            self.surface.blit(self.background_image, (0, 0))
-            self.surface.blit(self.score.render,
-                              self.score.rect)
-            for information in self.information_about_colors:
-                self.surface.blit(information.render,
-                                  information.rect)
-            self.surface.blit(
-                pygame.font.Font('fonts/ARCADE.ttf', 25).render(
-                    self.start_new_game[2], 1,
-                    self.start_new_game[3]),
-                (self.start_new_game[0], self.start_new_game[1]))
-            self.handle_events()
-            self.draw()
-            is_exit = self.update()
-            if is_exit:
-                self.exit()
-                self.update_table()
-            pygame.display.update()
-            self.clock.tick(self.frame_rate)
+    def update_table(self, current_user):
+        if current_user in self.table_of_records:
+            self.table_of_records[current_user].append(self.total_score)
+        else:
+            self.table_of_records[current_user] = [self.total_score]
+        self.table_of_records[current_user].sort(reverse=True)
+        self.write_table()
+
+    def new_game(self):
+        self.total_score = 0
+        self.object = Field(self.colors, self.width, self.height)
+        self.information_about_colors = self.set_information_about_colors()
+
+    def mousePressEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            pos = event.pos().x(), event.pos().y()
+            for (x, y) in self.object.blocks2coordinates:
+                if x * 22 < pos[0] < 23 + x * 22 and \
+                        y * 22 < pos[1] < y * 22 + 23:
+                    score, color, is_exit = self.object.remove((x, y))
+                    self.information_about_colors = \
+                        self.set_information_about_colors(color, score)
+                    self.update_score(score)
+                    self.init_ui()
+                    if is_exit:
+                        self.exit()
+
+    def paintEvent(self, event):
+        qp = QPainter()
+        qp.begin(self)
+        self.draw_rectangles(qp)
+        self.drawText(qp)
+        qp.end()
+
+    def drawText(self, qp):
+        x, y = self.width * 22 + 10, 30
+        qp.setPen(QColor(0, 0, 0))
+        qp.setFont(QFont('fonts/ARCADE.ttf', 15))
+        qp.drawText(x, y, "Score: {}".format(self.total_score))
+        qp.setFont(QFont('fonts/ARCADE.ttf', 10))
+        for i in self.information_about_colors:
+            y = y + 25
+            qp.drawText(x, y, i)
+
+    def draw_rectangles(self, qp):
+        for (x, y) in self.object.blocks2coordinates:
+            color = self.object.blocks2coordinates[(x, y)][0].color
+            qp.setPen(QColor(color[0], color[1], color[2]))
+            qp.setBrush(QColor(color[0], color[1], color[2]))
+            qp.drawRect(x * 22, y * 22, 20, 20)
+
+
+
+
+
+
