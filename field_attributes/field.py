@@ -142,5 +142,3 @@ class Field:
             field += '{0}\n'.format(
                 ' '.join(str(j) if j is not None else '' for j in i))
         return field
-
-

@@ -1,26 +1,48 @@
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QLineEdit
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QLineEdit, \
     QInputDialog
-from PyQt5.QtGui import QPainter, QColor, QBrush, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QBasicTimer
 from accessory_files.score import Score
 from field_attributes.field import Field
 
 
 class Game(QWidget):
-    def __init__(self, colors, width, height):
+    def __init__(self, colors, size):
         super().__init__()
 
-        self.colors = colors
-        self.width = width
-        self.height = height
+        self.size = size
+        self.width, self.height, self.colors = \
+            self.init_field_size(colors, self.size)
         self.game_over = False
         self.object = Field(self.colors, self.width, self.height)
         self.total_score = 0
         self.isWaitingAfterLine = False
-        self.table_of_records_file = "texts/table_of_records.txt"
+        self.table_of_records_file = "texts/best_results.txt"
         self.init_ui()
         self.information_about_colors = self.set_information_about_colors()
         self.table_of_records = self.set_table_of_records()
+        self.best_results = {}
+
+    @staticmethod
+    def init_field_size(COLORS, size):
+        if size == 'small':
+            width = 10
+            height = 10
+            colors = COLORS[0:4]
+        if size == 'middle1':
+            width = 14
+            height = 14
+            colors = COLORS[0:5]
+        if size == 'middle2':
+            width = 14
+            height = 14
+            colors = COLORS[0:6]
+        if size == 'big':
+            width = 25
+            height = 25
+            colors = COLORS
+        return width, height, colors
 
     def set_information_about_colors(self, color_remove=None, count=0):
         information_about_colors = []
@@ -33,32 +55,13 @@ class Game(QWidget):
         return information_about_colors
 
     def set_table_of_records(self):
-        table_of_records = {}
-        with open(self.table_of_records_file) as table:
-            for text in table.readlines():
-                if text.find(":") > 0:
-                    user, records = text.split(":")
-                    table_of_records[user] = [int(i) for i in
-                                              records.split(',')]
-                else:
-                    break
+        with open(self.table_of_records_file) as f:
+            table_of_records = eval(f.read())
         return table_of_records
 
     def write_table(self):
         with open(self.table_of_records_file, 'w') as table_text:
-            table_text.write('\n'.join('{}: {}'.format(user,
-                                                       ', '.join(map(str,
-                                                                     set(self.table_of_records[user][0:10]))))
-                                       for user in self.table_of_records))
-
-    def update_table(self):
-        current_user = self.current_user.get_text()
-        if current_user in self.table_of_records:
-            self.table_of_records[current_user].append(self.total_score)
-        else:
-            self.table_of_records[current_user] = [self.total_score]
-        self.table_of_records[current_user].sort(reverse=True)
-        self.write_table()
+            table_text.write(str(self.table_of_records))
 
     def update_score(self, score):
         self.total_score += score
@@ -67,83 +70,43 @@ class Game(QWidget):
         self.setFixedSize(800, 600)
         self.button_quit = QPushButton('New game', self)
         self.button_quit.setFont(QFont('fonts/ARCADE.ttf', 15))
-        x, y = self.width * 22 + 5, self.height * 22 - 40
-        self.button_quit.setFixedWidth(115)
+        x, y = self.width * 22 + 5, self.height * 22 - 60
+        self.button_quit.setFixedWidth(140)
         self.button_quit.setFixedHeight(40)
         self.button_quit.adjustSize()
         self.button_quit.move(x, y)
 
         self.button_quit.clicked.connect(self.exit)
 
-        self.repaint()
-
     def exit(self):
-        le = QLineEdit(self)
-        le.move(130, 22)
-        text, ok = QInputDialog.getText(self, 'Game is over',
-                                        'Enter your name:')
-        if not ok:
-            return False
-        if ok:
+        if self.total_score != 0:
+            le = QLineEdit(self)
+            le.move(130, 22)
+            text, ok = QInputDialog.getText(self, 'Game is over',
+                                            'Enter your name:')
+            if not ok:
+                return False
             le.setText(str(text))
-            if self.total_score != 0:
-                self.update_table(text)
+            self.update_table(text)
             self.new_game()
             return True
 
     def update_table(self, current_user):
-        if current_user in self.table_of_records:
-            self.table_of_records[current_user].append(self.total_score)
-        else:
-            self.table_of_records[current_user] = [self.total_score]
-        self.table_of_records[current_user].sort(reverse=True)
+        self.table_of_records[self.size].append((current_user,
+                                                 self.total_score))
+        self.write_best_results()
         self.write_table()
+
+    def write_best_results(self):
+            for size in self.table_of_records:
+                self.table_of_records[size] = sorted(list(set(
+                    self.table_of_records[size])),
+                    key=lambda record: record[1])
+                self.table_of_records[size].reverse()
+                self.table_of_records[size] = \
+                    self.table_of_records[size][0:10]
 
     def new_game(self):
         self.total_score = 0
         self.object = Field(self.colors, self.width, self.height)
         self.information_about_colors = self.set_information_about_colors()
-
-    def mousePressEvent(self, event):
-        if event.buttons() == Qt.LeftButton:
-            pos = event.pos().x(), event.pos().y()
-            for (x, y) in self.object.blocks2coordinates:
-                if x * 22 < pos[0] < 23 + x * 22 and \
-                        y * 22 < pos[1] < y * 22 + 23:
-                    score, color, is_exit = self.object.remove((x, y))
-                    self.information_about_colors = \
-                        self.set_information_about_colors(color, score)
-                    self.update_score(score)
-                    self.init_ui()
-                    if is_exit:
-                        self.exit()
-
-    def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
-        self.draw_rectangles(qp)
-        self.drawText(qp)
-        qp.end()
-
-    def drawText(self, qp):
-        x, y = self.width * 22 + 10, 30
-        qp.setPen(QColor(0, 0, 0))
-        qp.setFont(QFont('fonts/ARCADE.ttf', 15))
-        qp.drawText(x, y, "Score: {}".format(self.total_score))
-        qp.setFont(QFont('fonts/ARCADE.ttf', 10))
-        for i in self.information_about_colors:
-            y = y + 25
-            qp.drawText(x, y, i)
-
-    def draw_rectangles(self, qp):
-        for (x, y) in self.object.blocks2coordinates:
-            color = self.object.blocks2coordinates[(x, y)][0].color
-            qp.setPen(QColor(color[0], color[1], color[2]))
-            qp.setBrush(QColor(color[0], color[1], color[2]))
-            qp.drawRect(x * 22, y * 22, 20, 20)
-
-
-
-
-
-

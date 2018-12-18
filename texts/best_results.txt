@@ -1,0 +1,1 @@
+{'small': [('Anya', 97), ('Anya', 83), ('Victor', 65), ('Anya', 62), ('Anya', 54), ('Victor', 46), ('Anya', 36), ('Anya', 35), ('Anya', 32), ('Anya', 30)], 'middle1': [('Victor', 41), ('Anya', 38), ('Anya', 23)], 'middle2': [('Anya', 37), ('Victor', 20), ('Anya', 15), ('Anya', 9)], 'big': [('Victor', 134), ('Anya', 35)]}

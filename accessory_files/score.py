@@ -8,4 +8,3 @@ class Score:
         self.score = QLabel('Score:  {}'.format(score))
         self.score.setFont(QtGui.QFont('fonts/Arcade.ttf', 15, QtGui.QFont.Bold))
         self.score.adjustSize()
-
